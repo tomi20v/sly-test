@@ -12,5 +12,5 @@ class Items(Resource):
                 cursor.execute("SELECT id, name, description, price FROM items")
                 items = cursor.fetchall()
                 return items
-        except mysql.connector.Error as err:
-            return {"error": f"Database error: {err}"}, 500
+        except Exception as e:
+            return {"error": "unknown"}, 500
