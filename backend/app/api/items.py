@@ -1,5 +1,16 @@
 from flask_restful import Resource
+import mysql.connector
 
 class Items(Resource):
+    def __init__(self, **kwargs):
+        self.db = kwargs['db']
+
     def get(self):
-        return [{"id": 1, "name": "Cool Skin", "price": 100}]
+        try:
+            connection = self.db.get_connection()
+            with connection.cursor(dictionary=True) as cursor:
+                cursor.execute("SELECT id, name, description, price FROM items")
+                items = cursor.fetchall()
+                return items
+        except mysql.connector.Error as err:
+            return {"error": f"Database error: {err}"}, 500
