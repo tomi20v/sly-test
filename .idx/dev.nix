@@ -8,7 +8,6 @@
   services.mysql = {
     enable = true;
     package = pkgs.mariadb;
-    #ensureDatabases = [ "emry" ];
   };
   idx = {
     # Search for the extensions you want on https://open-vsx.org/ and use "publisher.id"
