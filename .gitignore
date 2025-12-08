@@ -6,7 +6,7 @@ __pycache__/
 .venv/
 
 # IDE
-.idx/
+.idx/.data
 
 # Environment variables
 .env
