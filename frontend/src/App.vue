@@ -16,19 +16,11 @@
       </v-menu>
     </v-app-bar>
     <v-main>
-      <HelloWorld msg="+ Vite"/>
-      <v-btn @click="store.fetchItems()">Fetch Items</v-btn>
-      <v-list>
-        <v-list-item v-for="item in store.items" :key="item.id">
-          <v-list-item-title>{{ item.name }}</v-list-item-title>
-        </v-list-item>
-      </v-list>
+      <ItemList />
     </v-main>
   </v-app>
 </template>
 
 <script setup lang="ts">
-  import HelloWorld from './components/HelloWorld.vue'
-  import { useAppStore } from './store/app';
-  const store = useAppStore();
+  import ItemList from './components/ItemList.vue';
 </script>
