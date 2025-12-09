@@ -14,7 +14,7 @@ CREATE TABLE items (
     id INTEGER PRIMARY KEY AUTO_INCREMENT,
     name TEXT NOT NULL,
     description TEXT,
-    price REAL NOT NULL
+    price DECIMAL(10, 2) NOT NULL
 );
 
 -- Create the purchases table
@@ -27,7 +27,7 @@ CREATE TABLE purchases (
     FOREIGN KEY (item_id) REFERENCES items(id)
 );
 
--- Insert a sample user
+-- Insert sample users
 INSERT INTO users (id, name, email) VALUES (1, 'Test User #1', 'test1@example.com');
 INSERT INTO users (id, name, email) VALUES (2, 'Test User #2', 'test2@example.com');
 INSERT INTO users (id, name, email) VALUES (3, 'Test User #3', 'test3@example.com');
@@ -35,7 +35,7 @@ INSERT INTO users (id, name, email) VALUES (3, 'Test User #3', 'test3@example.co
 -- Insert some sample items
 INSERT INTO items (name, description, price) VALUES
 ('Power-up Potion', 'A potion that grants a temporary power-up.', 5.99),
-('Legendary Sword', 'A powerful sword for slaying dragons.', 19.99),
+('Legendary Long Sword with a Very Long Name', 'A powerful sword for slaying dragons.', 19.99),
 ('Mystic Shield', 'A shield that can deflect magical attacks.', 12.50),
 ('Elixir of Life', 'Restores full health and mana.', 9.99),
 ('Invisibility Cloak', 'Makes the wearer invisible for a short period.', 15.00),

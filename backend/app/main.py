@@ -1,8 +1,9 @@
 import os
+import time
 from flask import Flask
 from flask_restful import Api
 
-from app.api.items import Items
+from app.api.items import ItemsResource
 from app.database import Database
 from app.config import Config
 
@@ -23,9 +24,9 @@ try:
     return f"Hello {name}!"
 
   # Inject the database instance into the Items resource
-  api.add_resource(Items, '/api/items', resource_class_kwargs={'db': db})
+  api.add_resource(ItemsResource, '/api/items', resource_class_kwargs={'db': db})
 
-  # Register a function to close the database connection when the app exits 
+  # Register a function to close the database connection when the app exits
   # (I'd have to check if it's really a good practice like this?)
   @app.teardown_appcontext
   def teardown_db(exception=None):
