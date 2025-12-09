@@ -1,7 +1,9 @@
 from flask_restful import Resource
 import mysql.connector
+import time
+from app.helpers import to_json_serializable
 
-class Items(Resource):
+class ItemsResource(Resource):
     def __init__(self, **kwargs):
         self.db = kwargs['db']
 
@@ -11,6 +13,6 @@ class Items(Resource):
             with connection.cursor(dictionary=True) as cursor:
                 cursor.execute("SELECT id, name, description, price FROM items")
                 items = cursor.fetchall()
-                return items
+                return to_json_serializable(items)
         except Exception as e:
             return {"error": "unknown"}, 500
