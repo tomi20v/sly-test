@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { ItemInterface } from '../../model/ItemInterface';
+import type { ItemInterface } from '../model/ItemInterface';
 import axios from 'axios';
 
 export const useItemStore = defineStore('items', {
