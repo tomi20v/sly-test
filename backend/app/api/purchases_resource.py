@@ -16,15 +16,11 @@ class PurchasesResource(Resource):
 
     def get(self, purchase_id):
         try:
-            connection = self.db.get_connection()
-            with connection.cursor(dictionary=True) as cursor:
-                cursor.execute("SELECT * FROM purchases WHERE id = %s", (purchase_id,))
-                purchase = cursor.fetchone()
-
-                if purchase:
-                    return to_json_serializable(purchase), 200
-                else:
-                    return {"error": "Purchase not found"}, 404
+            purchase = self.purchases_repository.get(purchase_id)
+            if purchase:
+                return to_json_serializable(purchase), 200
+            else:
+                return {"error": "Purchase not found"}, 404
         except mysql.connector.Error as e:
             # NOTE: It's good practice to log the error e for debugging
             return {"error": "Database error"}, 500
