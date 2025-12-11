@@ -70,6 +70,7 @@
 import { computed, ref, watch } from 'vue';
 import type { ItemInterface } from '../model/ItemInterface';
 import CloseButton from './CloseButton.vue';
+import { usePurchaseStore } from '../store/purchaseStore';
 
 const enum PurchaseState {
   beforePurchase = 'beforePurchase',
@@ -91,9 +92,10 @@ const isBuyNowDisabled = ref(false);
 const errorMessage = ref<string | null>(null);
 const successMessage = ref<string | null>(null);
 const persistent = ref(false);
-const purchaseId = ref<number | null>(null);
+const purchaseId = ref<string | null>(null);
 let pollingInterval: any = null;
 
+const purchaseStore = usePurchaseStore();
 
 const priceEuros = computed(() => {
     if (props.item && typeof props.item.price === 'number') {
@@ -140,20 +142,7 @@ async function buyNow() {
   errorMessage.value = null;
 
   try {
-    const response = await fetch('/api/purchases', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        item_id: props.item.id,
-        email: "test2@example.com", // Hardcoded user ID, replace with actual user ID
-      }),
-    });
-    const responseData = await response.json();
-    if (!response.ok) {
-      throw new Error();
-    }
+    const responseData = await purchaseStore.createPurchase(props.item.id);
     purchaseId.value = responseData.id;
     purchaseState.value = PurchaseState.payingretry;
     startPolling();
@@ -171,25 +160,19 @@ function startPolling() {
     if (!purchaseId.value) return;
 
     try {
-      const response = await fetch(`/api/purchases/${purchaseId.value}`);
-      const data = await response.json();
-      if (response.ok) {
-        
-        if (data.payment_status === 'paid') {
-          clearInterval(pollingInterval);
-          purchaseState.value = PurchaseState.paid;
-          persistent.value = false;
-        } else if (data.payment_status === 'failed') {
-          clearInterval(pollingInterval);
-          errorMessage.value = 'Payment failed, please try again.';
-          purchaseState.value = PurchaseState.error;
-          persistent.value = false;
-          setTimeout(() => {
-            isBuyNowDisabled.value = false;
-          }, 2000);
-        }
-      } else {
-        throw new Error(data.error || 'Failed to get purchase status');
+      const data = await purchaseStore.fetchPurchase(purchaseId.value);
+      if (data.payment_status === 'paid') {
+        clearInterval(pollingInterval);
+        purchaseState.value = PurchaseState.paid;
+        persistent.value = false;
+      } else if (data.payment_status === 'failed') {
+        clearInterval(pollingInterval);
+        errorMessage.value = 'Payment failed, please try again.';
+        purchaseState.value = PurchaseState.error;
+        persistent.value = false;
+        setTimeout(() => {
+          isBuyNowDisabled.value = false;
+        }, 2000);
       }
     } catch (error) {
       clearInterval(pollingInterval);
