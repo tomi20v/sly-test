@@ -1,5 +1,4 @@
 import mysql.connector
-from app.helpers import to_json_serializable, to_json_serializable_array
 
 class ItemNotFoundError(Exception):
     pass
@@ -14,7 +13,7 @@ class ItemsRepository:
             with connection.cursor(dictionary=True) as cursor:
                 cursor.execute("SELECT id, name, description, price FROM items")
                 items = cursor.fetchall()
-                return to_json_serializable_array(items)
+                return items
         except mysql.connector.Error as e:
             raise e
 
@@ -26,6 +25,6 @@ class ItemsRepository:
                 item = cursor.fetchone()
                 if not item:
                     raise ItemNotFoundError(f"Item with id {item_id} not found")
-                return to_json_serializable(item)
+                return item
         except mysql.connector.Error as e:
             raise e
