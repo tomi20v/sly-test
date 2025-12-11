@@ -8,7 +8,7 @@
       </v-card-title>
       <v-card-text>
         <v-progress-linear
-          v-if="state === 'loading'"
+          v-if="state === 'loading' || itemStore.itemsLoading"
           indeterminate
           color="primary"
           class="mb-4"
@@ -26,7 +26,7 @@
           <v-list-item
             v-for="purchase in purchases"
             :key="purchase.id"
-            :title="`Purchase ID: ${purchase.id}`"
+            :title="getItemName(purchase.item_id)"
             :subtitle="`Time: ${new Date(purchase.created_at).toLocaleString()} ${purchase.payment_status.toUpperCase()}`"
           >
           </v-list-item>
@@ -39,12 +39,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import CloseButton from './CloseButton.vue';
-
-interface Purchase {
-  id: string;
-  created_at: string;
-  payment_status: 'pending' | 'failed' | 'paid';
-}
+import { useItemStore } from '../store/itemStore';
+import { type PurchaseInterface } from '../model/PurchaseInterface';
 
 const props = defineProps<{
   modelValue: boolean;
@@ -53,6 +49,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void;
 }>();
+
+const itemStore = useItemStore();
 
 const showDialog = computed({
   get() {
@@ -63,7 +61,7 @@ const showDialog = computed({
   }
 });
 
-const purchases = ref<Purchase[]>([]);
+const purchases = ref<PurchaseInterface[]>([]);
 const state = ref('loading'); // loading | error | empty | loaded
 const errorMessage = ref('');
 
@@ -93,8 +91,14 @@ async function fetchPurchases() {
 watch(() => props.modelValue, (newValue) => {
   if (newValue) {
     fetchPurchases();
+    itemStore.fetchItems();
   }
 });
+
+function getItemName(itemId: number) {
+  const item = itemStore.items.find(i => i.id === itemId);
+  return item ? item.name : 'Unknown Item';
+}
 
 function closeDialog() {
   showDialog.value = false;
