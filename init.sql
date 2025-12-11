@@ -57,5 +57,7 @@ INSERT INTO items (name, description, price) VALUES
 CREATE TABLE webhook_logs (
     id INTEGER PRIMARY KEY AUTO_INCREMENT,
     data TEXT NOT NULL,
+    result INT,
+    error TEXT,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

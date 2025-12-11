@@ -15,3 +15,13 @@ class WebhookLogsRepository:
         new_id = cursor.lastrowid
         cursor.close()
         return new_id
+    
+    def update(self, log_id, result, error=None):
+        conn = self._db.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            "UPDATE webhook_logs SET result = %s, error = %s WHERE id = %s",
+            (result, error, log_id)
+        )
+        conn.commit()
+        cursor.close()

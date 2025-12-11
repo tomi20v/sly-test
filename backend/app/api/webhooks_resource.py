@@ -10,9 +10,10 @@ class WebhooksResource(Resource):
         self.webhook_logs_repository = webhook_logs_repository
 
     def post(self):
+        log_id = None
         try:
             data = request.get_json()
-            self.webhook_logs_repository.create(data)
+            log_id = self.webhook_logs_repository.create(data)
             
             if not data or 'notification_type' not in data:
                 raise ValidationError('Invalid payload')
@@ -37,8 +38,16 @@ class WebhooksResource(Resource):
 
             self.purchases_repository.pay_purchase(purchase_id, xsolla_transaction_id)
 
+            self.webhook_logs_repository.update(log_id, 200)
+
             return {'status': 'success'}, 200
         except ValidationError as e:
-            return {'error': str(e)}, 400
+            error_message = str(e)
+            if log_id:
+                self.webhook_logs_repository.update(log_id, 400, error_message)
+            return {'error': error_message}, 400
         except Exception as e:
+            if log_id:
+                self.webhook_logs_repository.update(log_id, 500, 'Internal Server Error')
+            print(f"An unexpected error occurred: {e}")
             return {'error': 'Internal Server Error'}, 500
