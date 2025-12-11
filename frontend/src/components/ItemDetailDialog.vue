@@ -28,12 +28,17 @@
                   {{ errorMessage }}
               </v-alert>
             </v-card-text>
+             <v-card-text v-if="purchaseState === PurchaseState.paid">
+              <v-alert type="success" dense class="mb-4">
+                Payment successful, enjoy your item
+              </v-alert>
+            </v-card-text>
             <v-card-actions class="pa-4">
               <v-btn
-                v-if="purchaseState !== PurchaseState.payingretry"
+                v-if="purchaseState !== PurchaseState.payingretry && purchaseState !== PurchaseState.paid"
                 class="buy-now-btn"
                 block
-                :disabled="purchaseState !== PurchaseState.beforePurchase"
+                :disabled="isBuyNowDisabled"
                 @click="buyNow"
               >
                 <span v-if="purchaseState === PurchaseState.creatingPurchase">Processing...</span>
@@ -62,6 +67,7 @@ const enum PurchaseState {
   creatingPurchase = 'creatingPurchase',
   payingretry = 'payingretry',
   error = 'error',
+  paid = 'paid',
 }
 
 const props = defineProps<{
@@ -72,8 +78,13 @@ const props = defineProps<{
 const emit = defineEmits(['update:modelValue']);
 
 const purchaseState = ref<PurchaseState>(PurchaseState.beforePurchase);
+const isBuyNowDisabled = ref(false);
 const errorMessage = ref<string | null>(null);
+const successMessage = ref<string | null>(null);
 const persistent = ref(false);
+const purchaseId = ref<number | null>(null);
+let pollingInterval: any = null;
+
 
 const priceEuros = computed(() => {
     if (props.item && typeof props.item.price === 'number') {
@@ -98,13 +109,16 @@ const showDialog = computed({
   }
 });
 
-// we need this so that the outclick is handled properly.
 watch(() => props.modelValue, (newValue) => {
   if (newValue) {
-    // initialize state when opening dialog
     purchaseState.value = PurchaseState.beforePurchase;
     errorMessage.value = null;
+    successMessage.value = null;
     persistent.value = false;
+    isBuyNowDisabled.value = false;
+    if (pollingInterval) {
+      clearInterval(pollingInterval);
+    }
   }
 });
 
@@ -112,6 +126,7 @@ async function buyNow() {
   if (!props.item) return;
 
   persistent.value = true;
+  isBuyNowDisabled.value = true;
   purchaseState.value = PurchaseState.creatingPurchase;
   errorMessage.value = null;
 
@@ -127,26 +142,58 @@ async function buyNow() {
       }),
     });
     const responseData = await response.json();
-    console.log("response body", responseData);
     if (!response.ok) {
       throw new Error();
     }
-
+    purchaseId.value = responseData.id;
     purchaseState.value = PurchaseState.payingretry;
+    startPolling();
     
   } catch (error: any) {
     errorMessage.value = 'Purchase failed, please try again in a bit';
     purchaseState.value = PurchaseState.error;
     persistent.value = false;
-
-    // Re-enable the button after a delay
-   setTimeout(() => {
-       purchaseState.value = PurchaseState.beforePurchase;
-   }, 5000);
+    isBuyNowDisabled.value = false;
   }
 }
 
-// the button closes the dialog only when not persistent
+function startPolling() {
+  pollingInterval = setInterval(async () => {
+    if (!purchaseId.value) return;
+
+    try {
+      const response = await fetch(`/api/purchases/${purchaseId.value}`);
+      const data = await response.json();
+      if (response.ok) {
+        
+        if (data.payment_status === 'paid') {
+          clearInterval(pollingInterval);
+          purchaseState.value = PurchaseState.paid;
+          persistent.value = false;
+        } else if (data.payment_status === 'failed') {
+          clearInterval(pollingInterval);
+          errorMessage.value = 'Payment failed, please try again.';
+          purchaseState.value = PurchaseState.error;
+          persistent.value = false;
+          setTimeout(() => {
+            isBuyNowDisabled.value = false;
+          }, 2000);
+        }
+      } else {
+        throw new Error(data.error || 'Failed to get purchase status');
+      }
+    } catch (error) {
+      clearInterval(pollingInterval);
+      errorMessage.value = 'Error checking payment status.';
+      purchaseState.value = PurchaseState.error;
+      persistent.value = false;
+      setTimeout(() => {
+        isBuyNowDisabled.value = false;
+      }, 2000);
+    }
+  }, 2000);
+}
+
 function closeDialog() {
   if (!persistent.value) {
     showDialog.value = false;
