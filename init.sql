@@ -24,7 +24,7 @@ CREATE TABLE purchases (
     price DECIMAL(10, 2) NOT NULL,
     created_at DATETIME NOT NULL,
     payment_status ENUM('pending', 'failed', 'paid') NOT NULL DEFAULT 'pending',
-    xsolla_id VARCHAR(255) DEFAULT NULL,
+    xsolla_transaction_id VARCHAR(255) DEFAULT NULL,
     xsolla_token TEXT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (item_id) REFERENCES items(id)
