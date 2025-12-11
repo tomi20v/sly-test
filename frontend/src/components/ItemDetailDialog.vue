@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="showDialog" max-width="800px">
+  <v-dialog v-model="showDialog" max-width="800px" :persistent="persistent">
     <v-card class="item-detail-card">
       <v-btn icon="mdi-close" class="close-button" @click="closeDialog"></v-btn>
       <v-container fluid class="pa-0">
@@ -23,12 +23,28 @@
                 {{ item.description }}
               </p>
             </v-card-text>
+            <v-card-text>
+              <v-alert v-if="purchaseState === 'error'" type="error" dense class="mb-4">
+                  {{ errorMessage }}
+              </v-alert>
+              </v-card-text>
             <v-card-actions class="pa-4">
               <v-btn
+                v-if="purchaseState !== 'success'"
                 class="buy-now-btn"
                 block
+                :disabled="purchaseState === 'loading'"
                 @click="buyNow"
-              >Buy Now</v-btn>
+              >
+                <span v-if="purchaseState === 'loading'">Processing...</span>
+                <span v-else>Buy Now</span>
+              </v-btn>
+              <v-progress-linear
+                v-if="purchaseState === 'success'"
+                indeterminate
+                color="primary"
+                class="mb-4"
+              ></v-progress-linear>
             </v-card-actions>
           </v-col>
         </v-row>
@@ -38,8 +54,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import type { ItemInterface } from '../model/ItemInterface';
+
+type PurchaseState = 'idle' | 'loading' | 'success' | 'error';
 
 const props = defineProps<{
   modelValue: boolean,
@@ -48,12 +66,25 @@ const props = defineProps<{
 
 const emit = defineEmits(['update:modelValue']);
 
+const purchaseState = ref<PurchaseState>('idle');
+const errorMessage = ref<string | null>(null);
+const persistent = ref(false);
+
 const showDialog = computed({
   get() {
     return props.modelValue;
   },
   set(value) {
     emit('update:modelValue', value);
+  }
+});
+
+watch(() => props.modelValue, (newValue) => {
+  if (newValue) {
+    // initialize state when opening dialog
+    purchaseState.value = 'idle';
+    errorMessage.value = null;
+    persistent.value = false;
   }
 });
 
@@ -68,13 +99,46 @@ const getPriceCents = (price: number) => {
 };
 
 function closeDialog() {
-  showDialog.value = false;
+  if (!persistent)
+    showDialog.value = false;
 }
 
-function buyNow() {
-  // Placeholder for buy now functionality
-  console.log('Buy now clicked for:', props.item);
-  closeDialog();
+async function buyNow() {
+  if (!props.item) return;
+
+  persistent.value = true;
+  purchaseState.value = 'loading';
+  errorMessage.value = null;
+
+  try {
+    const response = await fetch('/api/purchases', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        item_id: props.item.id,
+        email: "test2@example.com", // Hardcoded user ID, replace with actual user ID
+      }),
+    });
+    const responseData = await response.json();
+    console.log("response body", responseData);
+    if (!response.ok) {
+      throw new Error();
+    }
+
+    purchaseState.value = 'success';
+    
+  } catch (error: any) {
+    errorMessage.value = 'Purchase failed, please try again in a bit';
+    purchaseState.value = 'error';
+    persistent.value = false;
+
+    // Re-enable the button after a delay
+//    setTimeout(() => {
+//        purchaseState.value = 'idle';
+//    }, 3000);
+  }
 }
 </script>
 
