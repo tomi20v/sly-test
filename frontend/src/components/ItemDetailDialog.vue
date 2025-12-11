@@ -16,31 +16,31 @@
           <v-col cols="12" md="6" class="d-flex flex-column">
             <v-card-title v-if="item" class="text-h5 pt-4 text-wrap">{{ item.name }}</v-card-title>
             <v-card-subtitle v-if="item">
-              <span class="price">€{{ getPriceEuros(item.price) }}<sup class="cents">{{ getPriceCents(item.price) }}</sup></span>
+              <span class="price">€{{ priceEuros }}<sup class="cents">{{ priceCents }}</sup></span>
             </v-card-subtitle>
             <v-card-text class="description-container">
               <p v-if="item" class="body-1 mt-4">
                 {{ item.description }}
               </p>
             </v-card-text>
-            <v-card-text>
-              <v-alert v-if="purchaseState === 'error'" type="error" dense class="mb-4">
+            <v-card-text v-if="purchaseState === PurchaseState.error" >
+              <v-alert type="error" dense class="mb-4">
                   {{ errorMessage }}
               </v-alert>
-              </v-card-text>
+            </v-card-text>
             <v-card-actions class="pa-4">
               <v-btn
-                v-if="purchaseState !== 'success'"
+                v-if="purchaseState !== PurchaseState.payingretry"
                 class="buy-now-btn"
                 block
-                :disabled="purchaseState === 'loading'"
+                :disabled="purchaseState !== PurchaseState.beforePurchase"
                 @click="buyNow"
               >
-                <span v-if="purchaseState === 'loading'">Processing...</span>
+                <span v-if="purchaseState === PurchaseState.creatingPurchase">Processing...</span>
                 <span v-else>Buy Now</span>
               </v-btn>
               <v-progress-linear
-                v-if="purchaseState === 'success'"
+                v-if="purchaseState === PurchaseState.payingretry"
                 indeterminate
                 color="primary"
                 class="mb-4"
@@ -57,7 +57,12 @@
 import { computed, ref, watch } from 'vue';
 import type { ItemInterface } from '../model/ItemInterface';
 
-type PurchaseState = 'idle' | 'loading' | 'success' | 'error';
+const enum PurchaseState {
+  beforePurchase = 'beforePurchase',
+  creatingPurchase = 'creatingPurchase',
+  payingretry = 'payingretry',
+  error = 'error',
+}
 
 const props = defineProps<{
   modelValue: boolean,
@@ -66,9 +71,23 @@ const props = defineProps<{
 
 const emit = defineEmits(['update:modelValue']);
 
-const purchaseState = ref<PurchaseState>('idle');
+const purchaseState = ref<PurchaseState>(PurchaseState.beforePurchase);
 const errorMessage = ref<string | null>(null);
 const persistent = ref(false);
+
+const priceEuros = computed(() => {
+    if (props.item && typeof props.item.price === 'number') {
+        return props.item.price.toFixed(2).split('.')[0];
+    }
+    return '0';
+});
+
+const priceCents = computed(() => {
+    if (props.item && typeof props.item.price === 'number') {
+        return props.item.price.toFixed(2).split('.')[1];
+    }
+    return '00';
+});
 
 const showDialog = computed({
   get() {
@@ -79,35 +98,21 @@ const showDialog = computed({
   }
 });
 
+// we need this so that the outclick is handled properly.
 watch(() => props.modelValue, (newValue) => {
   if (newValue) {
     // initialize state when opening dialog
-    purchaseState.value = 'idle';
+    purchaseState.value = PurchaseState.beforePurchase;
     errorMessage.value = null;
     persistent.value = false;
   }
 });
 
-const getPriceEuros = (price: number) => {
-    if (typeof price !== 'number') return '0';
-    return price.toFixed(2).split('.')[0];
-};
-
-const getPriceCents = (price: number) => {
-    if (typeof price !== 'number') return '00';
-    return price.toFixed(2).split('.')[1];
-};
-
-function closeDialog() {
-  if (!persistent)
-    showDialog.value = false;
-}
-
 async function buyNow() {
   if (!props.item) return;
 
   persistent.value = true;
-  purchaseState.value = 'loading';
+  purchaseState.value = PurchaseState.creatingPurchase;
   errorMessage.value = null;
 
   try {
@@ -127,19 +132,27 @@ async function buyNow() {
       throw new Error();
     }
 
-    purchaseState.value = 'success';
+    purchaseState.value = PurchaseState.payingretry;
     
   } catch (error: any) {
     errorMessage.value = 'Purchase failed, please try again in a bit';
-    purchaseState.value = 'error';
+    purchaseState.value = PurchaseState.error;
     persistent.value = false;
 
     // Re-enable the button after a delay
-//    setTimeout(() => {
-//        purchaseState.value = 'idle';
-//    }, 3000);
+   setTimeout(() => {
+       purchaseState.value = PurchaseState.beforePurchase;
+   }, 5000);
   }
 }
+
+// the button closes the dialog only when not persistent
+function closeDialog() {
+  if (!persistent.value) {
+    showDialog.value = false;
+  }
+}
+
 </script>
 
 <style scoped>
