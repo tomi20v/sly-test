@@ -6,4 +6,4 @@ if [ -z "$1" ]; then
 fi
 
 USER_ID=$1
-curl http://localhost:5000/api/user/$USER_ID/purchases
+curl http://localhost:5000/api/users/$USER_ID/purchases
