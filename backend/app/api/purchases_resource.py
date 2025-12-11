@@ -4,6 +4,7 @@ from flask import request
 from flask_restful import Resource
 import mysql.connector
 from app.repositories.items_repository import ItemNotFoundError
+from app.helpers import to_json_serializable
 
 class PurchasesResource(Resource):
     def __init__(self, **kwargs):
@@ -11,6 +12,24 @@ class PurchasesResource(Resource):
         self.user_repository = kwargs['user_repository']
         self.items_repository = kwargs['items_repository']
 
+    def get(self, purchase_id):
+        try:
+            connection = self.db.get_connection()
+            with connection.cursor(dictionary=True) as cursor:
+                cursor.execute("SELECT * FROM purchases WHERE id = %s", (purchase_id,))
+                purchase = cursor.fetchone()
+
+                if purchase:
+                    return to_json_serializable(purchase), 200
+                else:
+                    return {"error": "Purchase not found"}, 404
+        except mysql.connector.Error as e:
+            # NOTE: It's good practice to log the error e for debugging
+            return {"error": "Database error"}, 500
+        except Exception as e:
+            # NOTE: It's good practice to log the error e for debugging
+            return {"error": "An unexpected error occurred"}, 500
+    
     def post(self):
         # 1. Validate input
         data = request.get_json()
@@ -57,3 +76,4 @@ class PurchasesResource(Resource):
         except Exception as e:
             # NOTE: It's good practice to log the error e for debugging
             return {"error": "An unexpected error occurred"}, 500
+
