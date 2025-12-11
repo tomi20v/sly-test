@@ -1,18 +1,12 @@
 from flask_restful import Resource
-import mysql.connector
-import time
-from app.helpers import to_json_serializable
 
 class ItemsResource(Resource):
-    def __init__(self, **kwargs):
-        self.db = kwargs['db']
+  def __init__(self, **kwargs):
+      self.items_repository = kwargs['items_repository']
 
-    def get(self):
-        try:
-            connection = self.db.get_connection()
-            with connection.cursor(dictionary=True) as cursor:
-                cursor.execute("SELECT id, name, description, price FROM items")
-                items = cursor.fetchall()
-                return to_json_serializable(items)
-        except Exception as e:
-            return {"error": "unknown"}, 500
+  def get(self):
+      try:
+          items = self.items_repository.get_all()
+          return items, 200
+      except Exception as e:
+          return {"error": "unknown", "details": str(e)}, 500

@@ -5,7 +5,6 @@ USE sly;
 -- Create the users table
 CREATE TABLE users (
     id INTEGER PRIMARY KEY AUTO_INCREMENT,
-    name TEXT NOT NULL,
     email TEXT NOT NULL UNIQUE
 );
 
@@ -23,20 +22,23 @@ CREATE TABLE purchases (
     user_id INTEGER NOT NULL,
     item_id INTEGER NOT NULL,
     created_at DATETIME NOT NULL,
+    payment_status ENUM('pending', 'failed', 'paid') NOT NULL DEFAULT 'pending',
+    xsolla_id VARCHAR(255) DEFAULT NULL,
+    xsolla_token TEXT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (item_id) REFERENCES items(id)
 );
 
 -- Insert sample users
-INSERT INTO users (id, name, email) VALUES (1, 'Test User #1', 'test1@example.com');
-INSERT INTO users (id, name, email) VALUES (2, 'Test User #2', 'test2@example.com');
-INSERT INTO users (id, name, email) VALUES (3, 'Test User #3', 'test3@example.com');
+INSERT INTO users (id, email) VALUES (1, 'test1@example.com');
+INSERT INTO users (id, email) VALUES (2, 'test2@example.com');
+INSERT INTO users (id, email) VALUES (3, 'test3@example.com');
 
 -- Insert some sample items
 INSERT INTO items (name, description, price) VALUES
 ('Power-up Potion', 'A potion that grants a temporary power-up.', 5.99),
 ('Legendary Long Sword with a Very Long Name', 'A powerful sword for slaying dragons.', 19.99),
-('Mystic Shield', 'A shield that can deflect magical attacks.', 12.50),
+('Mystic Shield', 'A shield that can deflect magical attacks. A shield that can deflect magical attacks. A shield that can deflect magical attacks. A shield that can deflect magical attacks.', 12.50),
 ('Elixir of Life', 'Restores full health and mana.', 9.99),
 ('Invisibility Cloak', 'Makes the wearer invisible for a short period.', 15.00),
 ('Boots of Speed', 'Increases movement speed by 50%.', 7.50),
