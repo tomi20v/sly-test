@@ -10,7 +10,17 @@
         </template>
         <v-list>
           <v-list-item>
-            <v-list-item-title>Placeholder</v-list-item-title>
+            <template v-slot:prepend>
+              <v-icon icon="mdi-account"></v-icon>
+            </template>
+            <v-list-item-title>test2@example.com</v-list-item-title>
+          </v-list-item>
+          <v-divider></v-divider>
+          <v-list-item @click="showPurchaseList = true">
+            <template v-slot:prepend>
+              <v-icon icon="mdi-credit-card"></v-icon>
+            </template>
+            <v-list-item-title>My Purchases</v-list-item-title>
           </v-list-item>
         </v-list>
       </v-menu>
@@ -18,9 +28,14 @@
     <v-main>
       <ItemList />
     </v-main>
+    <PurchaseListDialog v-model="showPurchaseList" />
   </v-app>
 </template>
 
 <script setup lang="ts">
+  import { ref } from 'vue';
   import ItemList from './components/ItemList.vue';
+  import PurchaseListDialog from './components/PurchaseListDialog.vue';
+
+  const showPurchaseList = ref(false);
 </script>

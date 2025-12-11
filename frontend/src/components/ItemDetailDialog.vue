@@ -1,7 +1,7 @@
 <template>
   <v-dialog v-model="showDialog" max-width="800px" :persistent="persistent">
     <v-card class="item-detail-card">
-      <v-btn icon="mdi-close" class="close-button" @click="closeDialog"></v-btn>
+      <close-button @click="closeDialog"></close-button>
       <v-container fluid class="pa-0">
         <v-row no-gutters style="height: 600px">
           <v-col cols="12" md="6">
@@ -44,6 +44,14 @@
                 <span v-if="purchaseState === PurchaseState.creatingPurchase">Processing...</span>
                 <span v-else>Buy Now</span>
               </v-btn>
+              <v-btn
+                v-if="purchaseState === PurchaseState.paid"
+                class="buy-now-btn"
+                block
+                @click="goToPurchases"
+              >
+                My Purchases
+              </v-btn>
               <v-progress-linear
                 v-if="purchaseState === PurchaseState.payingretry"
                 indeterminate
@@ -61,6 +69,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import type { ItemInterface } from '../model/ItemInterface';
+import CloseButton from './CloseButton.vue';
 
 const enum PurchaseState {
   beforePurchase = 'beforePurchase',
@@ -199,7 +208,9 @@ function closeDialog() {
     showDialog.value = false;
   }
 }
-
+function goToPurchases() {
+  console.log('Redirecting to my purchases...');
+}
 </script>
 
 <style scoped>
@@ -211,13 +222,6 @@ function closeDialog() {
 .description-container {
   flex-grow: 1;
   overflow-y: auto;
-}
-
-.close-button {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 20;
 }
 
 .rounded-l-lg {
