@@ -1,4 +1,3 @@
-
 from mysql.connector.connection import MySQLConnection
 
 class PurchasesRepository:
@@ -30,3 +29,12 @@ class PurchasesRepository:
             cursor.execute("SELECT * FROM purchases WHERE user_id = %s ORDER BY id DESC LIMIT 10", (user_id,))
             purchases = cursor.fetchall()
             return purchases
+
+    def pay_purchase(self, purchase_id: int, xsolla_transaction_id: str) -> None:
+        connection = self.db.get_connection()
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "UPDATE purchases SET xsolla_transaction_id = %s, payment_status = 'paid' WHERE id = %s",
+                (xsolla_transaction_id, purchase_id)
+            )
+            connection.commit()
