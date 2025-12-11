@@ -6,6 +6,7 @@ import mysql.connector
 
 from app.api.items_resource import ItemsResource
 from app.api.purchases_resource import PurchasesResource
+from app.api.user_purchases_resource import UserPurchasesResource
 from app.database import Database
 from app.config import Config
 from app.repositories.user_repository import UserRepository
@@ -39,6 +40,8 @@ try:
       '/api/purchases/<int:purchase_id>',
       resource_class_kwargs={'db': db, 'user_repository': user_repository, 'items_repository': items_repository, 'purchases_repository': purchases_repository}
   )
+  api.add_resource(UserPurchasesResource, '/api/user/<int:user_id>/purchases', resource_class_kwargs={'purchases_repository': purchases_repository})
+
 
   # this serves simulating slow load and errors in the backend for development
   # @todo remove it or make it depend on an env var (errors could be 50% random)

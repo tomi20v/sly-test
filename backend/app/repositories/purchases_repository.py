@@ -23,3 +23,10 @@ class PurchasesRepository:
             cursor.execute("SELECT * FROM purchases WHERE id = %s", (purchase_id,))
             purchase = cursor.fetchone()
             return purchase
+    
+    def get_users_purchases(self, user_id: int) -> list:
+        connection = self.db.get_connection()
+        with connection.cursor(dictionary=True) as cursor:
+            cursor.execute("SELECT * FROM purchases WHERE user_id = %s ORDER BY id DESC LIMIT 10", (user_id,))
+            purchases = cursor.fetchall()
+            return purchases
