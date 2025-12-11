@@ -26,7 +26,7 @@
       </v-menu>
     </v-app-bar>
     <v-main>
-      <ItemList />
+      <ItemList @show-purchases="showPurchaseList = true" />
     </v-main>
     <PurchaseListDialog v-model="showPurchaseList" />
   </v-app>
