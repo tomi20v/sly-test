@@ -84,7 +84,7 @@ const props = defineProps<{
   item: ItemInterface | null
 }>();
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue', 'show-purchases']);
 
 const purchaseState = ref<PurchaseState>(PurchaseState.beforePurchase);
 const isBuyNowDisabled = ref(false);
@@ -209,7 +209,8 @@ function closeDialog() {
   }
 }
 function goToPurchases() {
-  console.log('Redirecting to my purchases...');
+  emit('show-purchases');
+  closeDialog();
 }
 </script>
 

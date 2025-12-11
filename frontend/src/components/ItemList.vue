@@ -28,7 +28,7 @@
              </v-card>
            </v-col>
          </v-row>
-         <item-detail-dialog v-model="dialog" :item="selectedItem"></item-detail-dialog>
+         <item-detail-dialog v-model="dialog" :item="selectedItem" @show-purchases="$emit('show-purchases')"></item-detail-dialog>
        </v-container>
      </template>
      
@@ -47,6 +47,8 @@
         selectedItem.value = item;
         dialog.value = true;
       };
+
+    defineEmits(['show-purchases']);
 
 
     const getPriceEuros = (price: number) => {
