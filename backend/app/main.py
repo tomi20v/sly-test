@@ -32,13 +32,18 @@ try:
   # Inject the database instance into the resources
   api.add_resource(ItemsResource, '/api/items', resource_class_kwargs={'items_repository': items_repository})
   api.add_resource(
-      PurchasesResource, '/api/purchases', 
+      PurchasesResource, 
+      '/api/purchases', 
+      '/api/purchases/<int:purchase_id>',
       resource_class_kwargs={'db': db, 'user_repository': user_repository, 'items_repository': items_repository}
   )
 
+  # this serves simulating slow load and errors in the backend for development
+  # @todo remove it or make it depend on an env var (errors could be 50% random)
   @app.before_request
   def before_request():
     time.sleep(1)
+    #return "Internal Server Error", 500
 
   # Register a function to close the database connection when the app exits
   @app.teardown_appcontext

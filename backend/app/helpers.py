@@ -1,4 +1,5 @@
 from decimal import Decimal
+from datetime import datetime
 
 def to_json_serializable(row):
     """
@@ -11,6 +12,8 @@ def to_json_serializable(row):
     for k, v in new_row.items():
         if isinstance(v, Decimal):
             new_row[k] = float(v)
+        elif isinstance(v, datetime):
+            new_row[k] = v.isoformat()
     return new_row
 
 def to_json_serializable_array(rows):
