@@ -52,3 +52,10 @@ INSERT INTO items (name, description, price) VALUES
 ('Sword of the Heavens', 'A divine sword that deals extra damage to undead.', 22.50),
 ('Staff of the Archmage', 'A powerful staff that enhances all magical abilities.', 30.00),
 ('Dagger of Shadows', 'A silent dagger that allows for stealthy takedowns.', 18.75);
+
+-- Create the webhook_log table
+CREATE TABLE webhook_logs (
+    id INTEGER PRIMARY KEY AUTO_INCREMENT,
+    data TEXT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
