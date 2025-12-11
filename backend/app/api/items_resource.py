@@ -9,4 +9,5 @@ class ItemsResource(Resource):
           items = self.items_repository.get_all()
           return items, 200
       except Exception as e:
-          return {"error": "unknown", "details": str(e)}, 500
+          # NOTE: It's good practice to log the error e for debugging
+          return {"error": "An unexpected error occurred"}, 500

@@ -5,24 +5,20 @@ class UserRepository:
         self.db = db
 
     def get_or_create_by_email(self, email: str) -> int:
-        """
-        Finds a user by email. If the user does not exist, it creates a new one.
-        Returns the user ID.
-        """
         try:
             connection = self.db.get_connection()
-            with connection.cursor(dictionary=True) as cursor:
-                # Find user by email
+            with connection.cursor() as cursor:
+                # Check if user exists
                 cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
-                user = cursor.fetchone()
+                result = cursor.fetchone()
 
-                if user:
-                    return user['id']
+                if result:
+                    return result[0]
                 else:
-                    # Create new user if not found
+                    # Create user if not exists
                     cursor.execute("INSERT INTO users (email) VALUES (%s)", (email,))
                     connection.commit()
                     return cursor.lastrowid
         except mysql.connector.Error as e:
-            # Re-raise the exception to be handled by the resource
-            raise e
+            # It's good practice to log the error e for debugging
+            raise Exception("Database error")

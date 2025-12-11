@@ -21,6 +21,7 @@ CREATE TABLE purchases (
     id INTEGER PRIMARY KEY AUTO_INCREMENT,
     user_id INTEGER NOT NULL,
     item_id INTEGER NOT NULL,
+    price DECIMAL(10, 2) NOT NULL,
     created_at DATETIME NOT NULL,
     payment_status ENUM('pending', 'failed', 'paid') NOT NULL DEFAULT 'pending',
     xsolla_id VARCHAR(255) DEFAULT NULL,
@@ -47,6 +48,7 @@ INSERT INTO items (name, description, price) VALUES
 ('Fireball Scroll', 'A scroll that unleashes a powerful fireball.', 3.00),
 ('Ice Blast Scroll', 'A scroll that freezes enemies in their tracks.', 3.00),
 ('Lightning Bolt Scroll', 'A scroll that calls down a bolt of lightning.', 3.00),
-('Dragon Scale Armor', 'Armor made from the scales of a dragon.', 25.00),
-('Phoenix Feather', 'A feather that can revive a fallen ally.', 30.00),
-('Bag of Holding', 'A bag that can hold an unlimited number of items.', 50.00);
+('Shield of the Elements', 'Provides resistance to all elemental damage.', 25.00),
+('Sword of the Heavens', 'A divine sword that deals extra damage to undead.', 22.50),
+('Staff of the Archmage', 'A powerful staff that enhances all magical abilities.', 30.00),
+('Dagger of Shadows', 'A silent dagger that allows for stealthy takedowns.', 18.75);

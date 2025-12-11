@@ -3,6 +3,7 @@ import time
 from flask import request
 from flask_restful import Resource
 import mysql.connector
+from app.repositories.items_repository import ItemNotFoundError
 
 class PurchasesResource(Resource):
     def __init__(self, **kwargs):
@@ -29,9 +30,8 @@ class PurchasesResource(Resource):
             return {'item_id': 'item_id must be an integer'}, 400
 
         try:
-            # 2. Check if item exists
-            if not self.items_repository.exists(item_id):
-                return {"item_id": "item_id does not exist"}, 400
+            # 2. Check if item exists and get price
+            item = self.items_repository.get(item_id)
 
             # 3. Get or create user
             user_id = self.user_repository.get_or_create_by_email(email)
@@ -43,14 +43,17 @@ class PurchasesResource(Resource):
             with connection.cursor(dictionary=True) as cursor:
               # 5. Create purchase in DB
               cursor.execute(
-                  "INSERT INTO purchases (user_id, item_id, created_at, xsolla_token) VALUES (%s, %s, NOW(), %s)",
-                  (user_id, item_id, xsolla_token)
+                  "INSERT INTO purchases (user_id, item_id, price, created_at, xsolla_token) VALUES (%s, %s, %s, NOW(), %s)",
+                  (user_id, item_id, item['price'], xsolla_token)
               )
               connection.commit()
 
             return {"xsolla_token": xsolla_token}, 200
-
+        except ItemNotFoundError as e:
+            return {"item_id": "item_id does not exist"}, 400
         except mysql.connector.Error as e:
-            return {"error": "Database error", "details": str(e)}, 500
+            # NOTE: It's good practice to log the error e for debugging
+            return {"error": "Database error"}, 500
         except Exception as e:
-            return {"error": "unknown", "details": str(e)}, 500
+            # NOTE: It's good practice to log the error e for debugging
+            return {"error": "An unexpected error occurred"}, 500
