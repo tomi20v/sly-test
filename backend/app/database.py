@@ -1,8 +1,11 @@
 import mysql.connector
+from mysql.connector import pooling
 
 class Database:
     def __init__(self, host, user, password, database):
-        self._connection = mysql.connector.connect(
+        self._pool = mysql.connector.pooling.MySQLConnectionPool(
+            pool_name="mypool",
+            pool_size=5,
             host=host,
             user=user,
             password=password,
@@ -10,10 +13,7 @@ class Database:
         )
 
     def get_connection(self):
-        if not self._connection.is_connected():
-            self._connection.reconnect()
-        return self._connection
+        return self._pool.get_connection()
 
     def close(self):
-        if self._connection and self._connection.is_connected():
-            self._connection.close()
+        pass
