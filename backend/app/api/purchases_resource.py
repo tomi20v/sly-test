@@ -5,12 +5,14 @@ from flask_restful import Resource
 import mysql.connector
 from app.repositories.items_repository import ItemNotFoundError
 from app.helpers import to_json_serializable
+from app.repositories.purchases_repository import PurchasesRepository
 
 class PurchasesResource(Resource):
     def __init__(self, **kwargs):
         self.db = kwargs['db']
         self.user_repository = kwargs['user_repository']
         self.items_repository = kwargs['items_repository']
+        self.purchases_repository = kwargs['purchases_repository']
 
     def get(self, purchase_id):
         try:
@@ -58,16 +60,10 @@ class PurchasesResource(Resource):
             # 4. Generate Xsolla token
             xsolla_token = hashlib.sha256(f"{email}{item_id}{time.time()}".encode()).hexdigest()
 
-            connection = self.db.get_connection()
-            with connection.cursor(dictionary=True) as cursor:
-              # 5. Create purchase in DB
-              cursor.execute(
-                  "INSERT INTO purchases (user_id, item_id, price, created_at, xsolla_token) VALUES (%s, %s, %s, NOW(), %s)",
-                  (user_id, item_id, item['price'], xsolla_token)
-              )
-              connection.commit()
+            # 5. Create purchase in DB
+            new_purchase = self.purchases_repository.create(user_id, item_id, item['price'], xsolla_token)
 
-            return {"xsolla_token": xsolla_token}, 200
+            return to_json_serializable(new_purchase), 200
         except ItemNotFoundError as e:
             return {"item_id": "item_id does not exist"}, 400
         except mysql.connector.Error as e:
@@ -76,4 +72,3 @@ class PurchasesResource(Resource):
         except Exception as e:
             # NOTE: It's good practice to log the error e for debugging
             return {"error": "An unexpected error occurred"}, 500
-

@@ -10,6 +10,7 @@ from app.database import Database
 from app.config import Config
 from app.repositories.user_repository import UserRepository
 from app.repositories.items_repository import ItemsRepository
+from app.repositories.purchases_repository import PurchasesRepository
 
 app = Flask(__name__)
 api = Api(app)
@@ -22,6 +23,7 @@ try:
   db = Database(host=config.MYSQL_HOST, user=config.MYSQL_USER, password=config.MYSQL_PASSWORD, database=config.MYSQL_DATABASE)
   user_repository = UserRepository(db)
   items_repository = ItemsRepository(db)
+  purchases_repository = PurchasesRepository(db)
 
   @app.route("/")
   def hello_world():
@@ -35,7 +37,7 @@ try:
       PurchasesResource, 
       '/api/purchases', 
       '/api/purchases/<int:purchase_id>',
-      resource_class_kwargs={'db': db, 'user_repository': user_repository, 'items_repository': items_repository}
+      resource_class_kwargs={'db': db, 'user_repository': user_repository, 'items_repository': items_repository, 'purchases_repository': purchases_repository}
   )
 
   # this serves simulating slow load and errors in the backend for development
