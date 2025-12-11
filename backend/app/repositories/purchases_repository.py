@@ -13,11 +13,13 @@ class PurchasesRepository:
                 (user_id, item_id, price, xsolla_token)
             )
             purchase_id = cursor.lastrowid
-            
-            # Fetch the just created purchase before committing
-            cursor.execute("SELECT * FROM purchases WHERE id = %s", (purchase_id,))
-            new_purchase = cursor.fetchone()
-            
             connection.commit()
-            
-            return new_purchase
+        
+        return self.get(purchase_id)
+
+    def get(self, purchase_id: int) -> dict:
+        connection = self.db.get_connection()
+        with connection.cursor(dictionary=True) as cursor:
+            cursor.execute("SELECT * FROM purchases WHERE id = %s", (purchase_id,))
+            purchase = cursor.fetchone()
+            return purchase
