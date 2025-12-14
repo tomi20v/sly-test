@@ -5,12 +5,13 @@
 Implemented the 
 - item list
 - purchases list (available in the top right menu, or after a successful purchase)
-- and a simple working payment flow
+- a simple working payment flow
   - when "BUY NOW" button is pressed, it is disabled, and a purchase is created in the backend
   - polling starts to retrieve the purchase's data, the button is replaced by a progress bar
   - if failed (has to be set in the DB manually), an error is displayed, and button is enabled again in a couple if seconds, and the flow restarts with a new purchase when pressed
   - if succeeded, a success message is displayed, and button is replaced by a "MY PURCHASES" button
-- finally, the test "payment success" script.
+- the test "payment success" script
+- a simple webhook logging system, as it comes very handy in live environments
 
 
 ## Details, BOM
