@@ -13,6 +13,7 @@
     # Search for the extensions you want on https://open-vsx.org/ and use "publisher.id"
     extensions = [
       "ms-python.python"
+      "pkgs.python311Packages.pip"
       "rangav.vscode-thunder-client"
       "mtxr.sqltools"
       "mtxr.sqltools-driver-mysql"
@@ -24,7 +25,7 @@
         install =
           "cd backend && python -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt";
         init-db = "mysql -u root < init.sql";
-        npm-install = "npm ci --no-audit --prefer-offline --no-progress --timing";
+        npm-install = "cd frontend && npm ci --no-audit --prefer-offline --no-progress --timing";
         # Open editors for the following files by default, if they exist:
         default.openFiles = [ "README.md" "src/index.html" "main.py" ];
       };
@@ -45,4 +46,3 @@
     };
   };
 }
-
