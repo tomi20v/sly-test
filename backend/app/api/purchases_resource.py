@@ -10,7 +10,7 @@ from app.repositories.purchases_repository import PurchasesRepository
 class PurchasesResource(Resource):
     def __init__(self, **kwargs):
         self.db = kwargs['db']
-        self.user_repository = kwargs['user_repository']
+        self.users_repository = kwargs['users_repository']
         self.items_repository = kwargs['items_repository']
         self.purchases_repository = kwargs['purchases_repository']
 
@@ -51,7 +51,7 @@ class PurchasesResource(Resource):
             item = self.items_repository.get(item_id)
 
             # 3. Get or create user
-            user_id = self.user_repository.get_or_create_by_email(email)
+            user_id = self.users_repository.get_or_create_by_email(email)
                 
             # 4. Generate Xsolla token
             xsolla_token = hashlib.sha256(f"{email}{item_id}{time.time()}".encode()).hexdigest()

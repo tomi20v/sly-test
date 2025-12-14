@@ -10,7 +10,7 @@ from app.api.user_purchases_resource import UserPurchasesResource
 from app.api.webhooks_resource import WebhooksResource
 from app.database import Database
 from app.config import Config
-from app.repositories.user_repository import UserRepository
+from app.repositories.users_repository import UsersRepository
 from app.repositories.items_repository import ItemsRepository
 from app.repositories.purchases_repository import PurchasesRepository
 from app.repositories.webhook_logs_repository import WebhookLogsRepository
@@ -24,7 +24,7 @@ try:
 
   # Create a database instance
   db = Database(host=config.MYSQL_HOST, user=config.MYSQL_USER, password=config.MYSQL_PASSWORD, database=config.MYSQL_DATABASE)
-  user_repository = UserRepository(db)
+  users_repository = UsersRepository(db)
   items_repository = ItemsRepository(db)
   purchases_repository = PurchasesRepository(db)
   webhook_logs_repository = WebhookLogsRepository(db)
@@ -41,7 +41,7 @@ try:
       PurchasesResource, 
       '/api/purchases', 
       '/api/purchases/<int:purchase_id>',
-      resource_class_kwargs={'db': db, 'user_repository': user_repository, 'items_repository': items_repository, 'purchases_repository': purchases_repository}
+      resource_class_kwargs={'db': db, 'users_repository': users_repository, 'items_repository': items_repository, 'purchases_repository': purchases_repository}
   )
   api.add_resource(UserPurchasesResource, '/api/users/<int:user_id>/purchases', resource_class_kwargs={'purchases_repository': purchases_repository})
   api.add_resource(WebhooksResource, '/api/webhooks/payment', resource_class_kwargs={'purchases_repository': purchases_repository, 'webhook_logs_repository': webhook_logs_repository})

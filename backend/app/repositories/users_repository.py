@@ -1,6 +1,6 @@
 import mysql.connector
 
-class UserRepository:
+class UsersRepository:
     def __init__(self, db):
         self.db = db
 
