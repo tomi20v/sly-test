@@ -16,6 +16,11 @@ export const usePurchaseStore = defineStore('purchases', {
         },
         body: JSON.stringify({
           item_id: itemId,
+          // this shouldn't be hardcoded here, but we have no authentication 
+          // which - hopefully - could send it automatically and verifyably 
+          // (eg. in a JWT token)
+          // Also, it's an email an not an ID so that a new user can be created automatically
+          email: 'test2@example.com',
         }),
       });
       const data = await response.json();
@@ -28,7 +33,8 @@ export const usePurchaseStore = defineStore('purchases', {
       this.purchasesLoading = true;
       this.purchasesError = '';
       try {
-        // Assuming user_id=2 for now.
+        // Assuming user_id=2 for now. With authentication we would get the
+        // user_id from the JWT token, or similar.
         const response = await fetch('/api/users/2/purchases');
         const data = await response.json();
 
