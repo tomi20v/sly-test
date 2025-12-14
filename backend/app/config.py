@@ -6,3 +6,4 @@ class Config:
     MYSQL_USER = os.environ.get('MYSQL_USER', 'root')
     MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD', '')
     MYSQL_DATABASE = os.environ.get('MYSQL_DATABASE', 'sly')
+    XSOLLA_HMAC_SECRET = os.environ.get('XSOLLA_HMAC_SECRET', 'verySecret')

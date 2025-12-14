@@ -2,6 +2,8 @@
 import sys
 import json
 import requests
+import hashlib
+import os
 
 if len(sys.argv) < 2:
     print("Usage: python scripts/pay_purchase.py <payment_id>")
@@ -9,13 +11,9 @@ if len(sys.argv) < 2:
 
 payment_id = sys.argv[1]
 
-url = "http://localhost:5000/api/webhooks/payment"
+secret = os.environ.get('XSOLLA_HMAC_SECRET', 'verySecret')
 
-headers = {
-    'accept': 'application/json',
-    'content-type': 'application/json',
-    'authorization': 'Signature d09695066c52c1b8bdae92f2d6eb59f5b5f89843'
-}
+url = "http://localhost:5000/api/webhooks/payment"
 
 data = {
     "notification_type": "order_paid",
@@ -190,7 +188,18 @@ data = {
     }
 }
 
-response = requests.post(url, headers=headers, data=json.dumps(data))
+request_body = json.dumps(data)
+string_to_sign = request_body + secret
+signature = hashlib.sha1(string_to_sign.encode('utf-8')).hexdigest()
+
+headers = {
+    'accept': 'application/json',
+    'content-type': 'application/json',
+    'authorization': f'Signature {signature}'
+}
+
+print("sending with signature: ", signature)
+response = requests.post(url, headers=headers, data=request_body)
 
 print(f"Status Code: {response.status_code}")
 try:
